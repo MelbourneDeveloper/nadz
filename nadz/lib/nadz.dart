@@ -8,19 +8,11 @@ abstract class Either<L, R> {
   bool get isRight => _right != null;
 
   @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-
-    if (other is Either<L, R>) {
-      if (isLeft && other.isLeft) {
-        return _left == other._left;
-      } else if (isRight && other.isRight) {
-        return _right == other._right;
-      }
-    }
-
-    return false;
-  }
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Either<L, R> &&
+          ((isLeft && other.isLeft && _left == other._left) ||
+              (isRight && other.isRight && _right == other._right)));
 
   @override
   int get hashCode => isLeft ? _left.hashCode : _right.hashCode;
