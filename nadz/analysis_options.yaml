@@ -3,5 +3,6 @@ include: package:austerity/analysis_options.yaml
 
 analyzer:
   errors:
+    public_member_api_docs: ignore
     matching_super_parameters: ignore
     avoid_equals_and_hash_code_on_mutable_classes: ignore
