@@ -1,0 +1,14 @@
+name: nadz
+description: Monads for Dart, but fun and practical
+version: 0.0.0-beta
+repository: https://github.com/MelbourneDeveloper/nadz
+
+environment:
+  sdk: ^3.1.3
+
+dependencies:
+
+dev_dependencies:
+  austerity: ^1.1.0
+  lints: ^2.0.0
+  test: ^1.21.0
