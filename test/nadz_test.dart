@@ -66,7 +66,7 @@ void main() {
     });
 
     test('isNone returns true when Option has no value', () {
-      final option = Option.none();
+      final option = Option<String>.none();
       expect(option.isNone, isTrue);
     });
 
@@ -104,7 +104,7 @@ void main() {
     });
 
     test('Option with None should not contain HttpListResultOrStatusCode', () {
-      final option = Option.none();
+      final option = Option<int>.none();
 
       expect(option.isNone, isTrue);
       expect(
@@ -114,7 +114,7 @@ void main() {
     });
 
     test('Option with ResultOrError', () {
-      final option = Option(ResultOrError(5));
+      final option = Option(ResultOrError<int, String>(5));
 
       expect(option.isSome, isTrue);
       expect(
@@ -124,7 +124,7 @@ void main() {
     });
 
     test('Option with None should not contain ResultOrError', () {
-      final option = Option.none();
+      final option = Option<DateTime>.none();
 
       expect(option.isNone, isTrue);
       expect(
@@ -142,7 +142,7 @@ void main() {
     });
 
     test('None Option inside Option', () {
-      final innerOption = Option.none();
+      final innerOption = Option<int>.none();
       final outerOption = Option(innerOption);
 
       expect(outerOption.isSome, isTrue);
@@ -472,11 +472,14 @@ void main() {
 
     test('Nested HttpListResultOrStatusCode inside ResultOrError', () {
       final innerHttp = HttpListResultOrStatusCode<int>(const [1, 2, 3]);
-      final result = ResultOrError(innerHttp);
+      final result =
+          ResultOrError<HttpListResultOrStatusCode<int>, int>(innerHttp);
 
       expect(result.isSuccess, isTrue);
       expect(
-        result.resultOr(() => HttpListResultOrStatusCode.error(404)).isSuccess,
+        result
+            .resultOr(() => HttpListResultOrStatusCode<int>.error(404))
+            .isSuccess,
         isTrue,
       );
     });
