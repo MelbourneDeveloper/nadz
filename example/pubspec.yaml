@@ -1,0 +1,9 @@
+name: nadz_example
+description: An example project that uses the Nadz library for Dart.
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  nadz:
+    path: ..
