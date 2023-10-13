@@ -397,4 +397,88 @@ void main() {
       expect(option.someOr(() => 0), equals(10));
     });
   });
+
+  group('Option Extensions and Special Operators', () {
+    test('Option >> operator with a function that returns None', () {
+      final option = Option<int>(5);
+      final transformed = option >> ((value) => Option<int>.none());
+      expect(transformed.isNone, isTrue);
+    });
+
+    test('Option | operator with None', () {
+      final option = Option<int>.none();
+      final result = option | 10;
+      expect(result, equals(10));
+    });
+
+    test('Option | operator with Some', () {
+      final option = Option<int>(5);
+      final result = option | 10;
+      expect(result, equals(5));
+    });
+  });
+
+  group('ResultOrError Special Cases', () {
+    test('ResultOrError >> operator with error state', () {
+      final result = ResultOrError<int, String>.error('Error');
+      final transformed =
+          result >> ((value) => ResultOrError<int, String>(value * 2));
+      expect(transformed.isError, isTrue);
+      expect(transformed.errorOrNull, equals('Error'));
+    });
+
+    test('ResultOrError & operator with both errors', () {
+      final result1 = ResultOrError<int, String>.error('Error1');
+      final result2 = ResultOrError<int, String>.error('Error2');
+
+      final merged = result1 &
+          (
+            result2,
+            (first, second) => ResultOrError((first, second)),
+            (first, second) =>
+                ResultOrError.error(first | (second | 'Unknown Error'))
+          );
+
+      expect(merged.isError, isTrue);
+      expect(merged.errorOrNull, equals('Error1'));
+    });
+  });
+
+  group('HttpListResultOrStatusCode Special Cases', () {
+    test('HttpListResultOrStatusCode >> operator with error state', () async {
+      final initial = HttpListResultOrStatusCode<int>.error(404);
+
+      final transformed = initial >>
+          ((list) => HttpListResultOrStatusCode(
+                list.map((number) => number * 2).toList(),
+              ));
+
+      expect(transformed.isError, isTrue);
+      expect(transformed.errorOrNull, equals(404));
+    });
+  });
+
+  group('Complex Nested Monads', () {
+    test('Nested ResultOrError inside Option', () {
+      final innerResult = ResultOrError<int, String>(5);
+      final option = Option(innerResult);
+
+      expect(option.isSome, isTrue);
+      expect(
+        option.someOr(() => ResultOrError.error('Error')).isSuccess,
+        isTrue,
+      );
+    });
+
+    test('Nested HttpListResultOrStatusCode inside ResultOrError', () {
+      final innerHttp = HttpListResultOrStatusCode<int>(const [1, 2, 3]);
+      final result = ResultOrError(innerHttp);
+
+      expect(result.isSuccess, isTrue);
+      expect(
+        result.resultOr(() => HttpListResultOrStatusCode.error(404)).isSuccess,
+        isTrue,
+      );
+    });
+  });
 }
