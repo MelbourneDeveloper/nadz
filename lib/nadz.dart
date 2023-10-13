@@ -116,6 +116,11 @@ extension EitherExtensions<L, R> on Either<L, R> {
 
 extension OptionExtensions<T> on Option<T> {
   T someOr(T Function() or) => _right ?? or();
+
+  Option<T> operator >>(
+    Option<T> Function(T) transform,
+  ) =>
+      bind(transform);
 }
 
 extension ResultOrErrorExtensions<T, E> on ResultOrError<T, E> {
@@ -141,6 +146,11 @@ extension ResultOrErrorExtensions<T, E> on ResultOrError<T, E> {
                 transformation.$1.isLeft ? transformation.$1._left as E : null,
               ),
             );
+
+  ResultOrError<T, E> operator >>(
+    ResultOrError<T, E> Function(T) transform,
+  ) =>
+      bind(transform);
 }
 
 extension ListResultOrErrorExtensions<T, E> on ListResultOrError<T, E> {
