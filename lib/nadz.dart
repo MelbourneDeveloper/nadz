@@ -21,6 +21,22 @@ abstract class Either<L, R> {
   String toString() => '$runtimeType ${isLeft ? '($_left)' : '($_right)'}';
 }
 
+abstract class EitherBase<L, R> extends Either<L, R> {
+  EitherBase.left(L left)
+      : _left = left,
+        _right = null;
+
+  EitherBase.right(R right)
+      : _left = null,
+        _right = right;
+
+  @override
+  final L? _left;
+
+  @override
+  final R? _right;
+}
+
 class None {
   const None();
 

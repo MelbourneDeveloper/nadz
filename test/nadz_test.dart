@@ -2,6 +2,11 @@ import 'package:nadz/nadz.dart';
 import 'package:nadz/nully_nadz.dart';
 import 'package:test/test.dart';
 
+class ConcreteEither<L, R> extends EitherBase<L, R> {
+  ConcreteEither.left(super.value) : super.left();
+  ConcreteEither.right(super.value) : super.right();
+}
+
 void main() {
   group('>>', () {
     test('Should transform successful HttpListResultOrStatusCode', () {
@@ -482,6 +487,31 @@ void main() {
             .isSuccess,
         isTrue,
       );
+    });
+  });
+
+  group('ConcreteEither', () {
+    test('should contain the left value when created with left', () {
+      final either = ConcreteEither<String, int>.left('Error');
+      expect(either.isLeft, isTrue);
+      expect(either.leftOrNull, 'Error');
+      expect(either.isRight, isFalse);
+    });
+
+    test('should contain the right value when created with right', () {
+      final either = ConcreteEither<String, int>.right(42);
+      expect(either.isRight, isTrue);
+      expect(either.rightOrNull, 42);
+      expect(either.isLeft, isFalse);
+    });
+
+    test('should support equality based on the contained value', () {
+      final either1 = ConcreteEither<String, int>.left('Error');
+      final either2 = ConcreteEither<String, int>.left('Error');
+      final either3 = ConcreteEither<String, int>.right(42);
+
+      expect(either1, equals(either2));
+      expect(either1, isNot(equals(either3)));
     });
   });
 }
