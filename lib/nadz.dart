@@ -78,9 +78,9 @@ class Option<T> extends Either<None, T> {
 
 /// Encapsulates either a result (value of generic type T) or an error
 /// (value of generic type E).
-class ResultOrError<T, E> extends Either<E, T> {
-  ResultOrError(this._result) : _error = null;
-  ResultOrError.error(this._error) : _result = null;
+class Result<T, E> extends Either<E, T> {
+  Result(this._result) : _error = null;
+  Result.error(this._error) : _result = null;
 
   final T? _result;
   final E? _error;
@@ -92,15 +92,15 @@ class ResultOrError<T, E> extends Either<E, T> {
   E? get _left => _error;
 }
 
-/// Specialized version of [ResultOrError] for list results.
-class ListResultOrError<T, E> extends ResultOrError<List<T>, E> {
-  ListResultOrError(super._result);
-  ListResultOrError.error(E super.error) : super.error();
+/// Specialized version of [Result] for list results.
+class ListResult<T, E> extends Result<List<T>, E> {
+  ListResult(super._result);
+  ListResult.error(E super.error) : super.error();
 }
 
 /// Specialized version of ListResultOrError to be used for HTTP responses,
 /// with int as the error type to represent the HTTP status code.
-class HttpListResultOrStatusCode<T> extends ListResultOrError<T, int> {
+class HttpListResultOrStatusCode<T> extends ListResult<T, int> {
   HttpListResultOrStatusCode(super.result);
   HttpListResultOrStatusCode.error(super.error) : super.error();
 }
@@ -142,7 +142,7 @@ extension EitherExtensions<L, R> on Either<L, R> {
       isRight
           ? onRight != null
               ? onRight(transform(_right as R))
-              : ResultOrError<U, L>(transform(_right as R)) as M
+              : Result<U, L>(transform(_right as R)) as M
           : this as M;
 
   M merge<J, M extends Either<L, (R, J)>>(
@@ -167,7 +167,7 @@ extension OptionExtensions<T> on Option<T> {
       bind(transform);
 }
 
-extension ResultOrErrorExtensions<T, E> on ResultOrError<T, E> {
+extension ResultOrErrorExtensions<T, E> on Result<T, E> {
   /// Returns true if this instance represents a success result.
   bool get isSuccess => _result != null;
 
@@ -175,11 +175,11 @@ extension ResultOrErrorExtensions<T, E> on ResultOrError<T, E> {
   bool get isError => !isSuccess;
   T resultOr(T Function() or) => _right ?? or();
 
-  ResultOrError<(T, T), E> operator &(
+  Result<(T, T), E> operator &(
     (
       Either<E, T> other,
-      ResultOrError<(T, T), E> Function(T first, T second) onJoin,
-      ResultOrError<(T, T), E> Function(
+      Result<(T, T), E> Function(T first, T second) onJoin,
+      Result<(T, T), E> Function(
         Option<E> first,
         Option<E> second,
       ) onLeft,
@@ -194,13 +194,13 @@ extension ResultOrErrorExtensions<T, E> on ResultOrError<T, E> {
               ),
             );
 
-  ResultOrError<T, E> operator >>(
-    ResultOrError<T, E> Function(T) transform,
+  Result<T, E> operator >>(
+    Result<T, E> Function(T) transform,
   ) =>
       bind(transform);
 }
 
-extension ListResultOrErrorExtensions<T, E> on ListResultOrError<T, E> {
+extension ListResultOrErrorExtensions<T, E> on ListResult<T, E> {
   bool get isNotEmpty => !isEmpty;
   bool get isEmpty => !isSuccess || _result!.isEmpty;
 
@@ -208,7 +208,7 @@ extension ListResultOrErrorExtensions<T, E> on ListResultOrError<T, E> {
 
   int lengthOr(int Function() length) => isSuccess ? _result!.length : length();
 
-  M sorted<M extends ListResultOrError<T, E>>(
+  M sorted<M extends ListResult<T, E>>(
     int Function(T a, T b) compare, {
     required M Function(List<T>) onSuccess,
     required M Function(E) onError,
@@ -231,7 +231,7 @@ extension HttpListResultOrStatusCodeExtensions<T>
     on HttpListResultOrStatusCode<T> {
   HttpListResultOrStatusCode<T> sorted(int Function(T a, T b) compare) =>
       // ignore: unnecessary_cast
-      (this as ListResultOrError<T, int>).sorted(
+      (this as ListResult<T, int>).sorted(
         compare,
         onSuccess: HttpListResultOrStatusCode<T>.new,
         onError: HttpListResultOrStatusCode<T>.error,

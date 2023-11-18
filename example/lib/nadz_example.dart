@@ -12,11 +12,11 @@ void main() {
   print(noneOption); // Should print something like Option (None)
 
   // Creating a ResultOrError instance with a result
-  final successResult = ResultOrError<String, String>('Success');
+  final successResult = Result<String, String>('Success');
   print(successResult); // Should print something like ResultOrError (Success)
 
   // Creating a ResultOrError instance with an error
-  final errorResult = ResultOrError<String, String>.error('Error');
+  final errorResult = Result<String, String>.error('Error');
   print(errorResult);
 
   // Should print something like ResultOrError (Error)
@@ -31,9 +31,9 @@ void main() {
   // Should print "Got result: Success"
 
   // Using the map method to transform the result
-  final mappedResult = successResult.map<String, ResultOrError<String, String>>(
+  final mappedResult = successResult.map<String, Result<String, String>>(
     (result) => result.toUpperCase(),
-    onRight: ResultOrError.new,
+    onRight: Result.new,
   );
   print(mappedResult);
 

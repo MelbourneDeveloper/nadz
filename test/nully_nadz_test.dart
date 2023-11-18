@@ -5,70 +5,70 @@ import 'package:test/test.dart';
 void main() {
   group('ListResultOrErrorNullExtensions Tests', () {
     test('firstOrNull should return the first element or null', () {
-      final result = ListResultOrError<int, String>([1, 2, 3]);
+      final result = ListResult<int, String>([1, 2, 3]);
       expect(result.firstOrNull, equals(1));
 
-      final error = ListResultOrError<int, String>.error('Error');
+      final error = ListResult<int, String>.error('Error');
       expect(error.firstOrNull, isNull);
     });
 
     test('firstWhereOrNull should return the first matching element or null',
         () {
-      final result = ListResultOrError<int, String>([1, 2, 3]);
+      final result = ListResult<int, String>([1, 2, 3]);
       expect(result.firstWhereOrNull((i) => i.isEven), equals(2));
       expect(result.firstWhereOrNull((i) => i > 3), isNull);
 
-      final error = ListResultOrError<int, String>.error('Error');
+      final error = ListResult<int, String>.error('Error');
       expect(error.firstWhereOrNull((i) => i.isEven), isNull);
     });
 
     test('lengthOrNull should return the length or null', () {
-      final result = ListResultOrError<int, String>([1, 2, 3]);
+      final result = ListResult<int, String>([1, 2, 3]);
       expect(result.lengthOrNull, equals(3));
 
-      final error = ListResultOrError<int, String>.error('Error');
+      final error = ListResult<int, String>.error('Error');
       expect(error.lengthOrNull, isNull);
     });
 
     test('takeOrNull should return the first n elements or null', () {
-      final result = ListResultOrError<int, String>([1, 2, 3]);
+      final result = ListResult<int, String>([1, 2, 3]);
       expect(result.takeOrNull(2), equals([1, 2]));
 
-      final error = ListResultOrError<int, String>.error('Error');
+      final error = ListResult<int, String>.error('Error');
       expect(error.takeOrNull(2), isNull);
     });
 
     test('whereOrNull should return filtered elements or null', () {
-      final result = ListResultOrError<int, String>([1, 2, 3]);
+      final result = ListResult<int, String>([1, 2, 3]);
       expect(result.whereOrNull((i) => i.isEven), equals([2]));
 
-      final error = ListResultOrError<int, String>.error('Error');
+      final error = ListResult<int, String>.error('Error');
       expect(error.whereOrNull((i) => i.isEven), isNull);
     });
   });
 
   group('EitherExtensions Tests', () {
     test('rightOrNull should return right value or null', () {
-      final either = ResultOrError<int, String>(5);
+      final either = Result<int, String>(5);
       expect(either.rightOrNull, equals(5));
 
-      final error = ResultOrError<int, String>.error('Error');
+      final error = Result<int, String>.error('Error');
       expect(error.rightOrNull, isNull);
     });
 
     test('leftOrNull should return left value or null', () {
-      final either = ResultOrError<int, String>.error('Error');
+      final either = Result<int, String>.error('Error');
       expect(either.leftOrNull, equals('Error'));
 
-      final result = ResultOrError<int, String>(5);
+      final result = Result<int, String>(5);
       expect(result.leftOrNull, isNull);
     });
 
     test('mapRightOrNull should transform right value or return null', () {
-      final either = ResultOrError<int, String>(5);
+      final either = Result<int, String>(5);
       expect(either.mapRightOrNull((i) => i * 2), equals(10));
 
-      final error = ResultOrError<int, String>.error('Error');
+      final error = Result<int, String>.error('Error');
       expect(error.mapRightOrNull((i) => i * 2), isNull);
     });
   });

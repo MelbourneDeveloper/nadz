@@ -1,6 +1,6 @@
 import 'package:nadz/nadz.dart';
 
-extension ListResultOrErrorNullExtensions<T, E> on ListResultOrError<T, E> {
+extension ListResultOrErrorNullExtensions<T, E> on ListResult<T, E> {
   T? get firstOrNull => match(
         onRight: (list) => list.isNotEmpty ? list.first : null,
         onLeft: (e) => null,
@@ -35,7 +35,7 @@ extension EitherExtensions<L, R> on Either<L, R> {
       match(onRight: transform, onLeft: (e) => null);
 }
 
-extension ResultOrErrorNullExtensions<T, E> on ResultOrError<T, E> {
+extension ResultOrErrorNullExtensions<T, E> on Result<T, E> {
   T? get resultOrNull => rightOrNull;
   E? get errorOrNull => leftOrNull;
 }

@@ -119,11 +119,11 @@ void main() {
     });
 
     test('Option with ResultOrError', () {
-      final option = Option(ResultOrError<int, String>(5));
+      final option = Option(Result<int, String>(5));
 
       expect(option.isSome, isTrue);
       expect(
-        option.someOr(() => ResultOrError.error('Error')).isSuccess,
+        option.someOr(() => Result.error('Error')).isSuccess,
         isTrue,
       );
     });
@@ -176,8 +176,8 @@ void main() {
       });
 
       test('ResultOrError map without onRight', () {
-        final result = ResultOrError<int, String>(5);
-        final mapped = result.map<int, ResultOrError<int, String>>(
+        final result = Result<int, String>(5);
+        final mapped = result.map<int, Result<int, String>>(
           (value) => value * 2,
         );
 
@@ -234,13 +234,13 @@ void main() {
 
   group('Either join method tests', () {
     test('Both Eithers are right', () {
-      final either1 = ResultOrError<int, String>(5);
-      final either2 = ResultOrError<double, String>(10.5);
+      final either1 = Result<int, String>(5);
+      final either2 = Result<double, String>(10.5);
 
       final joined = either1.merge(
         either2,
-        (first, second) => ResultOrError((first, second)),
-        (first, second) => ResultOrError<(int, double), String>.error(
+        (first, second) => Result((first, second)),
+        (first, second) => Result<(int, double), String>.error(
           first.someOr(() => '') + second.someOr(() => ''),
         ),
       );
@@ -250,11 +250,11 @@ void main() {
     });
 
     test('Merge - Both are successful', () {
-      final joined = ResultOrError<double, String>(15.6) &
+      final joined = Result<double, String>(15.6) &
           (
-            ResultOrError(10.5),
-            (first, second) => ResultOrError((first, second)),
-            (first, second) => ResultOrError.error(first | (second | 'Error'))
+            Result(10.5),
+            (first, second) => Result((first, second)),
+            (first, second) => Result.error(first | (second | 'Error'))
           );
 
       expect(joined.isRight, isTrue);
@@ -262,11 +262,11 @@ void main() {
     });
 
     test('Merge - second result is an error', () {
-      final joined = ResultOrError<double, String>(15.6) &
+      final joined = Result<double, String>(15.6) &
           (
-            ResultOrError.error('Ouch!'),
-            (first, second) => ResultOrError((first, second)),
-            (first, second) => ResultOrError.error(first | (second | 'Error'))
+            Result.error('Ouch!'),
+            (first, second) => Result((first, second)),
+            (first, second) => Result.error(first | (second | 'Error'))
           );
 
       expect(joined.isError, isTrue);
@@ -274,13 +274,13 @@ void main() {
     });
 
     test('First Either is left, second is right', () {
-      final either1 = ResultOrError<int, String>.error('Error1');
-      final either2 = ResultOrError<double, String>(10.5);
+      final either1 = Result<int, String>.error('Error1');
+      final either2 = Result<double, String>(10.5);
 
       final joined = either1.merge(
         either2,
-        (first, second) => ResultOrError((first, second)),
-        (first, second) => ResultOrError<(int, double), String>.error(
+        (first, second) => Result((first, second)),
+        (first, second) => Result<(int, double), String>.error(
           first.someOr(() => '') + second.someOr(() => ''),
         ),
       );
@@ -295,13 +295,13 @@ void main() {
     });
 
     test('Both Eithers are left', () {
-      final either1 = ResultOrError<int, String>.error('Error1');
-      final either2 = ResultOrError<double, String>.error('Error2');
+      final either1 = Result<int, String>.error('Error1');
+      final either2 = Result<double, String>.error('Error2');
 
       final joined = either1.merge(
         either2,
-        (first, second) => ResultOrError((first, second)),
-        (first, second) => ResultOrError<(int, double), String>.error(
+        (first, second) => Result((first, second)),
+        (first, second) => Result<(int, double), String>.error(
           first.someOr(() => '') + second.someOr(() => ''),
         ),
       );
@@ -314,13 +314,13 @@ void main() {
     });
 
     test('First Either is right, second is left', () {
-      final either1 = ResultOrError<int, String>(5);
-      final either2 = ResultOrError<double, String>.error('Error2');
+      final either1 = Result<int, String>(5);
+      final either2 = Result<double, String>.error('Error2');
 
       final joined = either1.merge(
         either2,
-        (first, second) => ResultOrError((first, second)),
-        (first, second) => ResultOrError<(int, double), String>.error(
+        (first, second) => Result((first, second)),
+        (first, second) => Result<(int, double), String>.error(
           first.someOr(() => '') + second.someOr(() => ''),
         ),
       );
@@ -337,8 +337,8 @@ void main() {
 
   group('Either | operator tests', () {
     test('Both Eithers are right with int and double types', () {
-      final either1 = ResultOrError<int, String>(5);
-      final either2 = ResultOrError<double, String>(10.5);
+      final either1 = Result<int, String>(5);
+      final either2 = Result<double, String>(10.5);
 
       final result1 = either1 | 0; // Should return 5 as either1 is right
       final result2 = either2 | 0.0; // Should return 10.5 as either2 is right
@@ -348,8 +348,8 @@ void main() {
     });
 
     test('First Either is left, second is right with int and double types', () {
-      final either1 = ResultOrError<int, String>.error('Error');
-      final either2 = ResultOrError<double, String>(10.5);
+      final either1 = Result<int, String>.error('Error');
+      final either2 = Result<double, String>(10.5);
 
       final result1 = either1 | 0; // Should return 0 as either1 is left
       final result2 = either2 | 0.0; // Should return 10.5 as either2 is right
@@ -359,8 +359,8 @@ void main() {
     });
 
     test('Both Eithers are left with int and double types', () {
-      final either1 = ResultOrError<int, String>.error('Error1');
-      final either2 = ResultOrError<double, String>.error('Error2');
+      final either1 = Result<int, String>.error('Error1');
+      final either2 = Result<double, String>.error('Error2');
 
       final result1 = either1 | 0; // Should return 0 as either1 is left
       final result2 = either2 | 0.0; // Should return 0.0 as either2 is left
@@ -370,8 +370,8 @@ void main() {
     });
 
     test('Using | operator with different default values', () {
-      final either1 = ResultOrError<int, String>.error('Error');
-      final either2 = ResultOrError<double, String>(10.5);
+      final either1 = Result<int, String>.error('Error');
+      final either2 = Result<double, String>(10.5);
 
       final result1 = either1 | 99; // Should return 99 as either1 is left
       final result2 = either2 | 99.9; // Should return 10.5 as either2 is right
@@ -384,9 +384,8 @@ void main() {
   group('Combined tests for bind, either, and merge operators with Option<T>',
       () {
     test('Test with bind operator and Option<T>', () async {
-      final result = ResultOrError<int, String>(5);
-      final transformed =
-          result >> (value) => ResultOrError<int, String>(value * 2);
+      final result = Result<int, String>(5);
+      final transformed = result >> (value) => Result<int, String>(value * 2);
 
       final option = Option(transformed.rightOrNull);
       expect(option.isSome, isTrue);
@@ -394,7 +393,7 @@ void main() {
     });
 
     test('Test with either operator and Option<T>', () {
-      final result = ResultOrError<int, String>.error('Error');
+      final result = Result<int, String>.error('Error');
       final value = result | 10;
 
       final option = Option(value);
@@ -425,23 +424,21 @@ void main() {
 
   group('ResultOrError Special Cases', () {
     test('ResultOrError >> operator with error state', () {
-      final result = ResultOrError<int, String>.error('Error');
-      final transformed =
-          result >> ((value) => ResultOrError<int, String>(value * 2));
+      final result = Result<int, String>.error('Error');
+      final transformed = result >> ((value) => Result<int, String>(value * 2));
       expect(transformed.isError, isTrue);
       expect(transformed.errorOrNull, equals('Error'));
     });
 
     test('ResultOrError & operator with both errors', () {
-      final result1 = ResultOrError<int, String>.error('Error1');
-      final result2 = ResultOrError<int, String>.error('Error2');
+      final result1 = Result<int, String>.error('Error1');
+      final result2 = Result<int, String>.error('Error2');
 
       final merged = result1 &
           (
             result2,
-            (first, second) => ResultOrError((first, second)),
-            (first, second) =>
-                ResultOrError.error(first | (second | 'Unknown Error'))
+            (first, second) => Result((first, second)),
+            (first, second) => Result.error(first | (second | 'Unknown Error'))
           );
 
       expect(merged.isError, isTrue);
@@ -465,20 +462,19 @@ void main() {
 
   group('Complex Nested Monads', () {
     test('Nested ResultOrError inside Option', () {
-      final innerResult = ResultOrError<int, String>(5);
+      final innerResult = Result<int, String>(5);
       final option = Option(innerResult);
 
       expect(option.isSome, isTrue);
       expect(
-        option.someOr(() => ResultOrError.error('Error')).isSuccess,
+        option.someOr(() => Result.error('Error')).isSuccess,
         isTrue,
       );
     });
 
     test('Nested HttpListResultOrStatusCode inside ResultOrError', () {
       final innerHttp = HttpListResultOrStatusCode<int>(const [1, 2, 3]);
-      final result =
-          ResultOrError<HttpListResultOrStatusCode<int>, int>(innerHttp);
+      final result = Result<HttpListResultOrStatusCode<int>, int>(innerHttp);
 
       expect(result.isSuccess, isTrue);
       expect(
