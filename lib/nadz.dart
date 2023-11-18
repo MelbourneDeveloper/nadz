@@ -124,8 +124,8 @@ extension EitherExtensions<L, R> on Either<L, R> {
   }) =>
       isLeft ? onLeft(_left as L) : onRight(_right as R);
 
-  R rightOr(R Function() or) => _right ?? or();
-  L leftOr(L Function() or) => _left ?? or();
+  R rightOr(R Function() orElse) => _right ?? orElse();
+  L leftOr(L Function() orElse) => _left ?? orElse();
 
   R operator |(
     R value,
@@ -159,7 +159,7 @@ extension EitherExtensions<L, R> on Either<L, R> {
 }
 
 extension OptionExtensions<T> on Option<T> {
-  T someOr(T Function() or) => _right ?? or();
+  T someOr(T Function() orElse) => _right ?? orElse();
 
   Option<T> operator >>(
     Option<T> Function(T) transform,
@@ -173,7 +173,7 @@ extension ResultOrErrorExtensions<T, E> on Result<T, E> {
 
   /// Returns true if this instance represents an error.
   bool get isError => !isSuccess;
-  T resultOr(T Function() or) => _right ?? or();
+  T resultOr(T Function() orElse) => _right ?? orElse();
 
   Result<(T, T), E> operator &(
     (
@@ -204,7 +204,7 @@ extension ListResultOrErrorExtensions<T, E> on ListResult<T, E> {
   bool get isNotEmpty => !isEmpty;
   bool get isEmpty => !isSuccess || _result!.isEmpty;
 
-  Iterable<T> iterableOr(Iterable<T> Function() or) => _result ?? or();
+  Iterable<T> iterableOr(Iterable<T> Function() orElse) => _result ?? orElse();
 
   int lengthOr(int Function() length) => isSuccess ? _result!.length : length();
 
