@@ -216,7 +216,9 @@ extension HttpListResultOrStatusCodeExtensions<T>
 
 class ObservableState<S> {
   ObservableState(S initialState) : _state = Option<S>(initialState);
+  ObservableState.none() : _state = Option<S>.none();
   Option<S> _state;
+  Option<S> get state => _state;
   final List<WeakReference<void Function(Option<S>)>> _observers = [];
 }
 
@@ -228,9 +230,7 @@ extension ObservableStateObservers<S> on ObservableState<S> {
   void removeObserver(void Function(Option<S>) observer) {
     _observers.removeWhere((ref) => ref.target == observer);
   }
-}
 
-extension ObservableStateUpdate<S> on ObservableState<S> {
   void updateState(S Function(Option<S>) transform) {
     _state = Option(transform(_state));
     _notifyObservers();

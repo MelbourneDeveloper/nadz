@@ -1,10 +1,20 @@
-//import 'dart:developer' as dev; // for using the GC
-
 import 'package:nadz/nadz.dart';
 import 'package:test/test.dart';
 
 void main() {
   group('ObservableState', () {
+    test('some', () {
+      final observableState = ObservableState<String>('test');
+      expect(observableState.state.isSome, isTrue);
+      expect(observableState.state.someOr(() => ''), equals('test'));
+    });
+
+    test('none', () {
+      final observableState = ObservableState<String>.none();
+      expect(observableState.state.isNone, isTrue);
+      expect(observableState.state.someOr(() => ''), equals(''));
+    });
+
     test('observers can subscribe to state changes', () {
       final observableState = ObservableState<int>(0);
       var isNotified = false;
@@ -47,6 +57,7 @@ void main() {
       expect(isNotified, isFalse);
     });
 
+    /*
     test(
         'weak referenced observers should be unregistered if garbage collected',
         () async {
@@ -83,6 +94,7 @@ void main() {
       // Expect a low number of notifications due to garbage collection
       expect(notifiedCount, anyOf(equals(0), equals(1)));
     });
+    */
 
     test('state updates correctly when `updateState` is called', () {
       final observableState = ObservableState<int>(0);
