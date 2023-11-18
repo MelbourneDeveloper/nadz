@@ -76,6 +76,8 @@ class Option<T> extends Either<None, T> {
   bool get isNone => !isSome;
 }
 
+/// Encapsulates either a result (value of generic type T) or an error
+/// (value of generic type E).
 class ResultOrError<T, E> extends Either<E, T> {
   ResultOrError(this._result) : _error = null;
   ResultOrError.error(this._error) : _result = null;
@@ -90,16 +92,29 @@ class ResultOrError<T, E> extends Either<E, T> {
   E? get _left => _error;
 }
 
+/// Specialized version of [ResultOrError] for list results.
 class ListResultOrError<T, E> extends ResultOrError<List<T>, E> {
   ListResultOrError(super._result);
   ListResultOrError.error(E super.error) : super.error();
 }
 
+/// Specialized version of ListResultOrError to be used for HTTP responses,
+/// with int as the error type to represent the HTTP status code.
 class HttpListResultOrStatusCode<T> extends ListResultOrError<T, int> {
   HttpListResultOrStatusCode(super.result);
   HttpListResultOrStatusCode.error(super.error) : super.error();
 }
 
+/// Encapsulates a state value that can be observed by external observers.
+class ObservableState<S> {
+  ObservableState(S initialState) : _state = Option<S>(initialState);
+  ObservableState.none() : _state = Option<S>.none();
+
+  /// The current state wrapped in an Option.
+  Option<S> _state;
+  Option<S> get state => _state;
+  final List<WeakReference<void Function(Option<S>)>> _observers = [];
+}
 //------------ Estensioni ------------
 
 extension EitherExtensions<L, R> on Either<L, R> {
@@ -153,7 +168,10 @@ extension OptionExtensions<T> on Option<T> {
 }
 
 extension ResultOrErrorExtensions<T, E> on ResultOrError<T, E> {
+  /// Returns true if this instance represents a success result.
   bool get isSuccess => _result != null;
+
+  /// Returns true if this instance represents an error.
   bool get isError => !isSuccess;
   T resultOr(T Function() or) => _right ?? or();
 
@@ -227,23 +245,19 @@ extension HttpListResultOrStatusCodeExtensions<T>
           : HttpListResultOrStatusCode<U>.error(_error!);
 }
 
-class ObservableState<S> {
-  ObservableState(S initialState) : _state = Option<S>(initialState);
-  ObservableState.none() : _state = Option<S>.none();
-  Option<S> _state;
-  Option<S> get state => _state;
-  final List<WeakReference<void Function(Option<S>)>> _observers = [];
-}
-
 extension ObservableStateObservers<S> on ObservableState<S> {
+  /// Adds an observer  with a [WeakReference], which is notified when the
+  /// state changes.
   void addObserver(void Function(Option<S>) observer) {
     _observers.add(WeakReference(observer));
   }
 
+  /// Removes an observer so it no longer receives state changes.
   void removeObserver(void Function(Option<S>) observer) {
     _observers.removeWhere((ref) => ref.target == observer);
   }
 
+  /// Updates the state based on a given transform function.
   void updateState(S Function(Option<S>) transform) {
     _state = Option(transform(_state));
     _notifyObservers();
