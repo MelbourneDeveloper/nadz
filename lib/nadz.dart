@@ -1,5 +1,10 @@
 //------------ Monadi ------------
 
+/// The Either class represents a value of one of two possible types
+/// (a disjoint union). Instances of Either are either an instance of left or
+/// right. All other Monads in this library derive from this type.
+///
+/// Use [EitherBase] to derive new Monads from this
 abstract class Either<L, R> {
   L? get _left;
   R? get _right;
@@ -21,6 +26,8 @@ abstract class Either<L, R> {
   String toString() => '$runtimeType ${isLeft ? '($_left)' : '($_right)'}';
 }
 
+/// An abstract base class for Either that initializes left and right values.
+/// Use this base class to derive new Monads
 abstract class EitherBase<L, R> extends Either<L, R> {
   EitherBase.left(L left)
       : _left = left,
@@ -37,6 +44,7 @@ abstract class EitherBase<L, R> extends Either<L, R> {
   final R? _right;
 }
 
+/// None represents the absence of a value in [Option].
 class None {
   const None();
 
@@ -44,6 +52,8 @@ class None {
   String toString() => 'None';
 }
 
+/// Option type is used to represent optional values that could either be
+/// 'Some' or 'None'.
 class Option<T> extends Either<None, T> {
   Option(this._value) : _none = null;
   Option.none()
@@ -59,7 +69,10 @@ class Option<T> extends Either<None, T> {
   @override
   None? get _left => _none;
 
+  /// Returns true if the option is Some, false otherwise.
   bool get isSome => _value != null;
+
+  /// Returns true if the option is None, false otherwise.
   bool get isNone => !isSome;
 }
 
