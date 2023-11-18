@@ -213,3 +213,36 @@ extension HttpListResultOrStatusCodeExtensions<T>
           ? HttpListResultOrStatusCode<U>(transform(_result!))
           : HttpListResultOrStatusCode<U>.error(_error!);
 }
+
+class ObservableState<S> {
+  ObservableState(S initialState) : _state = Option<S>(initialState);
+  Option<S> _state;
+  final List<WeakReference<void Function(Option<S>)>> _observers = [];
+}
+
+extension ObservableStateObservers<S> on ObservableState<S> {
+  void addObserver(void Function(Option<S>) observer) {
+    _observers.add(WeakReference(observer));
+  }
+
+  void removeObserver(void Function(Option<S>) observer) {
+    _observers.removeWhere((ref) => ref.target == observer);
+  }
+}
+
+extension ObservableStateUpdate<S> on ObservableState<S> {
+  void updateState(S Function(Option<S>) transform) {
+    _state = Option(transform(_state));
+    _notifyObservers();
+  }
+
+  void _notifyObservers() {
+    _observers.removeWhere((ref) => ref.target == null);
+    for (final weakRef in _observers) {
+      final observer = weakRef.target;
+      if (observer != null) {
+        observer(_state);
+      }
+    }
+  }
+}
