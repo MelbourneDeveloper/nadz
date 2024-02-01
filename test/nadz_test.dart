@@ -510,4 +510,19 @@ void main() {
       expect(either1, isNot(equals(either3)));
     });
   });
+
+  group('Result match', () {
+    test('should return correct match on success', () {
+      final result = Result<int, String>(1);
+      expect(result.match(onSuccess: (n) => n, onError: (e) => -1), 1);
+    });
+
+    test('should return correct match on error', () {
+      final result = Result<int, String>.error('ouch');
+      expect(
+        result.match(onSuccess: (n) => 'yep', onError: (e) => 'nup $e'),
+        'nup ouch',
+      );
+    });
+  });
 }
