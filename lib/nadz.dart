@@ -247,7 +247,8 @@ extension ResultExtensions<T, E> on Result<T, E> {
     required U Function(T) onSuccess,
     required U Function(E) onError,
   }) =>
-      (this as Either<T, E>).match(onLeft: onSuccess, onRight: onError);
+      // ignore: unnecessary_cast
+      (this as Either<E, T>).match(onLeft: onError, onRight: onSuccess);
 }
 
 /// Extends [ListResult] with additional functionality.
@@ -282,8 +283,8 @@ extension ListResultExtensions<T, E> on ListResult<T, E> {
     required Iterable<T> Function(E) onError,
   }) =>
       match(
-        onRight: (list) => list.where(predicate),
-        onLeft: onError,
+        onSuccess: (list) => list.where(predicate),
+        onError: onError,
       );
 }
 

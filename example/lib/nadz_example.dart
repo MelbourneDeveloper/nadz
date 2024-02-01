@@ -23,8 +23,8 @@ void main() {
 
   // Using the match method to handle both success and error cases
   final matchedResult = successResult.match(
-    onRight: (result) => 'Got result: $result',
-    onLeft: (error) => 'Got error: $error',
+    onSuccess: (result) => 'Got result: $result',
+    onError: (error) => 'Got error: $error',
   );
   print(matchedResult);
 

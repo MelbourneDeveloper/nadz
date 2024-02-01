@@ -1,11 +1,14 @@
 import 'package:nadz/nadz.dart';
 
-extension ListResultOrErrorNullExtensions<T, E> on ListResult<T, E> {
+///Extensions for [ListResult]
+extension ListResultExtensions<T, E> on ListResult<T, E> {
+  ///Returns the list if it is success null otherwise
   T? get firstOrNull => match(
-        onRight: (list) => list.isNotEmpty ? list.first : null,
-        onLeft: (e) => null,
+        onSuccess: (list) => list.isNotEmpty ? list.first : null,
+        onError: (e) => null,
       );
 
+  ///Returns the first value in the list if it is success null otherwise
   T? firstWhereOrNull(bool Function(T) predicate) {
     final iterable = whereOrNull(predicate);
 
@@ -16,14 +19,16 @@ extension ListResultOrErrorNullExtensions<T, E> on ListResult<T, E> {
     return null;
   }
 
-  int? get lengthOrNull => match(onLeft: (l) => null, onRight: (r) => r.length);
+  
+  int? get lengthOrNull =>
+      match(onError: (l) => null, onSuccess: (r) => r.length);
 
   Iterable<T>? takeOrNull(int i) =>
-      match(onLeft: (l) => null, onRight: (r) => r.take(i));
+      match(onError: (l) => null, onSuccess: (r) => r.take(i));
 
   Iterable<T>? whereOrNull(bool Function(T) predicate) => match(
-        onRight: (list) => list.where(predicate),
-        onLeft: (e) => null,
+        onSuccess: (list) => list.where(predicate),
+        onError: (e) => null,
       );
 }
 
