@@ -11,3 +11,6 @@
 - Rename ResultOrError to Result, and ListResultOrError to ListResult
 - Add doco
 - Other small renames
+
+## 0.0.5-beta
+- Adds a `match` extension for `Result` so that the functions are named `onSuccess` and `onError`, which is far more readable
