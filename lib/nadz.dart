@@ -240,6 +240,14 @@ extension ResultExtensions<T, E> on Result<T, E> {
     Result<T, E> Function(T) transform,
   ) =>
       bind(transform);
+
+  /// Returns the result of [onSuccess] when this instance represents a success
+  /// and the result of [onError] when this instance represents an error.
+  U match<U>({
+    required U Function(T) onSuccess,
+    required U Function(E) onError,
+  }) =>
+      (this as Either<T, E>).match(onLeft: onSuccess, onRight: onError);
 }
 
 /// Extends [ListResult] with additional functionality.
