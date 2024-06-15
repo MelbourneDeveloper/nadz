@@ -5,6 +5,7 @@ import 'package:test/test.dart';
 void main() {
   group('ListResultOrErrorNullExtensions Tests', () {
     test('firstOrNull should return the first element or null', () {
+      // ignore: inference_failure_on_instance_creation
       const result = Success([1, 2, 3]);
       expect(result.firstOrNull, equals(1));
 
@@ -14,6 +15,7 @@ void main() {
 
     test('firstWhereOrNull should return the first matching element or null',
         () {
+      // ignore: inference_failure_on_instance_creation
       const result = Success([1, 2, 3]);
       expect(result.firstWhereOrNull((i) => i.isEven), equals(2));
       expect(result.firstWhereOrNull((i) => i > 3), isNull);
@@ -23,6 +25,7 @@ void main() {
     });
 
     test('lengthOrNull should return the length or null', () {
+      // ignore: inference_failure_on_instance_creation
       const result = Success([1, 2, 3]);
       expect(result.lengthOrNull, equals(3));
 
@@ -31,6 +34,7 @@ void main() {
     });
 
     test('takeOrNull should return the first n elements or null', () {
+      // ignore: inference_failure_on_instance_creation
       const result = Success([1, 2, 3]);
       expect(result.takeOrNull(2), equals([1, 2]));
 
@@ -39,6 +43,7 @@ void main() {
     });
 
     test('whereOrNull should return filtered elements or null', () {
+      // ignore: inference_failure_on_instance_creation
       const result = Success([1, 2, 3]);
       expect(result.whereOrNull((i) => i.isEven), equals([2]));
 

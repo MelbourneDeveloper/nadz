@@ -26,6 +26,7 @@ void main() {
 
     test('Should transform HttpListResultOrStatusCode with complex data type',
         () async {
+      // ignore: inference_failure_on_instance_creation
       const initial = Success(
         [
           [1, 2, 3],
@@ -46,6 +47,7 @@ void main() {
     });
 
     test('Should filter out even numbers using >> operator', () {
+      // ignore: inference_failure_on_instance_creation
       const initial = Success([1, 2, 3, 4, 5, 6]);
 
       final transformed = initial >>
@@ -65,6 +67,7 @@ void main() {
     });
 
     test('isNone returns true when Option has no value', () {
+      // ignore: inference_failure_on_instance_creation
       const option = None();
       expect(option.isNone, isTrue);
     });
@@ -86,6 +89,7 @@ void main() {
     });
 
     test('Option with None should return None', () {
+      // ignore: inference_failure_on_instance_creation
       const option = None();
       expect(option.toString(), equals('None'));
     });
@@ -103,6 +107,7 @@ void main() {
     });
 
     test('Option with None should not contain HttpListResultOrStatusCode', () {
+      // ignore: inference_failure_on_instance_creation
       const option = None();
 
       expect(option.isNone, isTrue);
@@ -123,6 +128,7 @@ void main() {
     });
 
     test('Option with None should not contain ResultOrError', () {
+      // ignore: inference_failure_on_instance_creation
       const option = None();
 
       expect(option.isNone, isTrue);
@@ -142,6 +148,7 @@ void main() {
 
     group('Map function tests', () {
       test('successOrNull', () {
+        // ignore: inference_failure_on_instance_creation
         const httpList = Success([1, 2, 3]);
         final mapped = httpList.map(
           (list) => list.map((e) => e.toString()).toList(),

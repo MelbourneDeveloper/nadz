@@ -1,7 +1,12 @@
 // Types
 
+/// The value is iterable
 typedef IterableResult<T, E> = Result<Iterable<T>, E>;
+
+/// The value is a list
 typedef ListResult<T, E> = Result<List<T>, E>;
+
+/// A typical HTTP scenario for lists of values
 typedef HttpListResultOrStatusCode<T> = ListResult<T, int>;
 
 /// Success result (right)
@@ -91,12 +96,18 @@ class ObservableState<S> {
 
 //------------ Extensions ------------
 
+/// Extension methods for [Result]
 extension ResultExtensions<T, E> on Result<T, E> {
+
+  /// Returns the result a the specified value
   T resultOr(T or) => switch (this) {
         Success(value: final v) => v,
         _ => or,
       };
 
+  /// Achieves the same thing as a switch expression with pattern
+  /// matching. You should consider using a switch expression, but 
+  /// sometimes the match function is simpler
   U match<U>({
     required U Function(T) onSuccess,
     required U Function(E) onError,
@@ -158,6 +169,7 @@ extension OptionExtensions<T> on Option<T> {
         _ => orElse(),
       };
 
+  /// Returns a new [Option] from an existing [Option]
   Option<U> bind<U>(Option<U> Function(T) f) => switch (this) {
         Some(:final value) => f(value),
         None() => const None(),
