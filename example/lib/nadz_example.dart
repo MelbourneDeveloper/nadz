@@ -1,59 +1,82 @@
 // ignore_for_file: avoid_print
 
+import 'dart:convert';
+
+import 'package:http/http.dart';
 import 'package:nadz/nadz.dart';
 
-void main() {
-  // Creating an Option instance with some value
-  final someOption = Some<int>(5);
-  print(someOption); // Should print something like Option (5)
+extension ClientExtensions on Client {
+  Future<TResult> getResult<TResult extends Result>(
+    String url, {
+    required TResult Function(dynamic) onSuccess,
+    required TResult Function(int) onError,
+  }) async {
+    try {
+      final response = await this.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        //This could throw an exception. To complete this, we also
+        //need to wrap this in a try catch so we can return a
+        //useful error
+        return onSuccess(jsonDecode(response.body));
+      }
+      return onError(response.statusCode);
+    } catch (e) {
+      return onError(500);
+    }
+  }
+}
 
-  // Creating an Option instance with no value
-  final noneOption = None<int>();
-  print(noneOption); // Should print something like Option (None)
+class Post {
+  final int userId;
+  final int id;
+  final String title;
+  final String body;
 
-  // Creating a ResultOrError instance with a result
-  final successResult = Success<String, String>('Success');
-  print(successResult); // Should print something like ResultOrError (Success)
+  Post({
+    required this.userId,
+    required this.id,
+    required this.title,
+    required this.body,
+  });
 
-  // Creating a ResultOrError instance with an error
-  final errorResult = Error<String, String>('Error');
-  print(errorResult);
+  factory Post.fromJson(Map<String, dynamic> json) {
+    return Post(
+      userId: json['userId'],
+      id: json['id'],
+      title: json['title'],
+      body: json['body'],
+    );
+  }
+}
 
-  // Should print something like ResultOrError (Error)
+void main() async {
+  final client = Client();
 
-  // Using the match method to handle both success and error cases
-  final matchedResult = successResult.match(
-    onSuccess: (result) => 'Got result: $result',
-    onError: (error) => 'Got error: $error',
+  final result = await client.getResult<Result<List<Post>, int>>(
+    'https://jsonplaceholder.typicode.com/posts',
+    onSuccess: (dynamic json) {
+      try {
+        final List<dynamic> jsonList = json as List<dynamic>;
+        final posts =
+            jsonList.map((jsonPost) => Post.fromJson(jsonPost)).toList();
+        return Success(posts);
+      } catch (e) {
+        return Error(500);
+      }
+    },
+    onError: (statusCode) => Error(statusCode),
   );
-  print(matchedResult);
 
-  // Should print "Got result: Success"
+  final display = switch (result) {
+    Success(value: final posts) =>
+      '''Fetched ${posts.length} posts successfully!
+      ${posts.map((p) => 'Title: ${p.title}\nBody: ${p.body}\n---').join('\n')}
+      ''',
+    Error(error: final statusCode) =>
+      'Failed to fetch posts. Status code: $statusCode',
+  };
 
-  // Using the map method to transform the result
-  final mappedResult = successResult.map(
-    (result) => result.toUpperCase(),
-  );
-  print(mappedResult);
+  print(display);
 
-  // Should print something like ResultOrError (SUCCESS)
-
-  // Creating a HttpListResultOrStatusCode instance with a result
-  final httpListResult = Success([1, 2, 3]);
-  print(
-    httpListResult,
-  );
-
-  // Should print something like HttpListResultOrStatusCode ([1, 2, 3])
-
-  // Using the transformList method to transform the list
-  final transformedHttpListResult = httpListResult.map(
-    (list) => list.map((item) => 'Item: $item').toList(),
-  );
-
-  // Should print something like HttpListResultOrStatusCode
-  //(["Item: 1", "Item: 2", "Item: 3"])
-  print(
-    transformedHttpListResult,
-  );
+  client.close();
 }

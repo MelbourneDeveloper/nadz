@@ -1,5 +1,5 @@
 name: nadz
-description: Carefully crafted monads, such as Result and Option for exhaustive pattern matching
+description: Carefully crafted monads, such as Result and Option for exhaustive pattern matching in Dart.
 version: 0.0.6-beta
 repository: https://github.com/MelbourneDeveloper/nadz
 
