@@ -23,18 +23,14 @@ extension PostExtensions on Map<String, dynamic> {
 extension ClientExtensions on Client {
   Future<Result<List<T>, int>> getResult<T>(
     String url, {
-    required T Function(Map<String, dynamic>) onMap,
-    required Result<List<T>, int> Function(List<T>) onSuccess,
+    required List<T> Function(Iterable<Map<String, dynamic>>) onSuccess,
   }) async {
     try {
       final response = await this.get(Uri.parse(url));
       if (response.statusCode == 200) {
         final jsonList = jsonDecode(response.body) as List<dynamic>;
-        final resultList = jsonList
-            .cast<Map<String, dynamic>>()
-            .map((jsonMap) => onMap(jsonMap))
-            .toList();
-        return onSuccess(resultList);
+
+        return Success(onSuccess(jsonList.cast<Map<String, dynamic>>()));
       }
       return Error(response.statusCode);
     } catch (e) {
@@ -44,13 +40,16 @@ extension ClientExtensions on Client {
 }
 
 void main() async {
+  //Make the call
   final result = await Client().getResult(
     'https://jsonplaceholder.typicode.com/posts',
-    onMap: (jsonPost) => jsonPost.toPost(),
-    onSuccess: (posts) => Success(posts),
+    onSuccess: (jsonPosts) =>
+        //Map the JSON results to a list of Posts
+        jsonPosts.map((p) => p.toPost()).toList(),
   );
 
   final display = switch (result) {
+    //This is the exhaustive pattern matching. We can only get results of these
     Success(value: final posts) => 'Fetched ${posts.length} posts successfully!'
         '\n${posts.map((p) => 'Title: ${p.title}\nBody: ${p.body}\n---').join('\n')}',
     Error(error: final statusCode) =>
