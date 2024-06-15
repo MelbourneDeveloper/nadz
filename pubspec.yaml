@@ -1,6 +1,6 @@
 name: nadz
 description: Carefully crafted monads, such as Result and Option for exhaustive pattern matching in Dart.
-version: 0.0.6-beta
+version: 0.0.7-beta
 repository: https://github.com/MelbourneDeveloper/nadz
 
 environment:

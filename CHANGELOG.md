@@ -1,3 +1,7 @@
+## 0.0.7-beta
+
+- Formatting
+
 ## 0.0.6-beta
 
 - There are many breaking changes in this version
