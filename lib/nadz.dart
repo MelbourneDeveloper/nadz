@@ -162,6 +162,15 @@ extension OptionExtensions<T> on Option<T> {
     Option<T> Function(T) transform,
   ) =>
       bind(transform);
+
+  /// Returns the value if it exists, otherwise returns [or]
+  T operator |(
+    T or,
+  ) =>
+      switch (this) {
+        Some(:final value) => value,
+        None() => or,
+      };
 }
 
 Iterable<T> _sort<T>(Iterable<T> iterable, int Function(T, T) compare) =>

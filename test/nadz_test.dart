@@ -212,102 +212,79 @@ void main() {
     test('Both Eithers are right', () {
       const either1 = Success<int, String>(5);
       const either2 = Success<double, String>(10.5);
-
       final joined = either1.merge(
         either2,
-        (first, second) => Success((first, second)),
-        (first, second) => Error<(int, double), String>(
-          first.someOr(() => '') + second.someOr(() => ''),
-        ),
+        (first, second) => (first, second),
       );
-
       expect(joined.isSuccess, isTrue);
-      expect(joined.resultOrNull, equals((5, 10.5)));
+      expect(joined.resultOr((-1, -1.0)), equals((5, 10.5)));
     });
 
     test('Merge - Both are successful', () {
-      const joined = Success<double, String>(15.6) &
-          (
-            Result(10.5),
-            (first, second) => Result((first, second)),
-            (first, second) => Result.error(first | (second | 'Error'))
-          );
-
+      const either1 = Success<double, String>(15.6);
+      const either2 = Success<double, String>(10.5);
+      final joined = either1.merge(
+        either2,
+        (first, second) => (first, second),
+      );
       expect(joined.isSuccess, isTrue);
-      expect(joined.resultOrNull, equals((15.6, 10.5)));
+      expect(joined.resultOr((-1.0, -1.0)), equals((15.6, 10.5)));
     });
 
     test('Merge - second result is an error', () {
-      const joined = Success<double, String>(15.6) &
-          (
-            Result.error('Ouch!'),
-            (first, second) => Result((first, second)),
-            (first, second) => Result.error(first | (second | 'Error'))
-          );
-
+      const either1 = Success<double, String>(15.6);
+      const either2 = Error<double, String>('Ouch!');
+      final joined = either1.merge(
+        either2,
+        (first, second) => (first, second),
+      );
       expect(joined.isError, isTrue);
-      expect(joined.errorOrNull, equals('Ouch!'));
+      expect(
+        joined.match(onSuccess: (value) => null, onError: (error) => error),
+        equals('Ouch!'),
+      );
     });
 
     test('First Either is left, second is right', () {
       const either1 = Error<int, String>('Error1');
       const either2 = Success<double, String>(10.5);
-
-      const joined = either1.merge(
+      final joined = either1.merge(
         either2,
-        (first, second) => Result((first, second)),
-        (first, second) => Result<(int, double), String>.error(
-          first.someOr(() => '') + second.someOr(() => ''),
-        ),
+        (first, second) => (first, second),
       );
-
       expect(joined.isError, isTrue);
       expect(
-        joined.errorOrNull,
-        equals(
-          'Error1',
-        ),
-      ); // Since the first is left, it returns the first error message
+        joined.match(onSuccess: (value) => null, onError: (error) => error),
+        equals('Error1'),
+      );
     });
 
     test('Both Eithers are left', () {
       const either1 = Error<int, String>('Error1');
-      const either2 = Result<double, String>.error('Error2');
-
-      const joined = either1.merge(
+      const either2 = Error<double, String>('Error2');
+      final joined = either1.merge(
         either2,
-        (first, second) => Result((first, second)),
-        (first, second) => Result<(int, double), String>.error(
-          first.someOr(() => '') + second.someOr(() => ''),
-        ),
+        (first, second) => (first, second),
       );
-
       expect(joined.isError, isTrue);
       expect(
-        joined.errorOrNull,
-        equals('Error1Error2'),
-      ); // Combines both error messages
+        joined.match(onSuccess: (value) => null, onError: (error) => error),
+        equals('Error1'),
+      );
     });
 
     test('First Either is right, second is left', () {
       const either1 = Success<int, String>(5);
       const either2 = Error<double, String>('Error2');
-
-      const joined = either1.merge(
+      final joined = either1.merge(
         either2,
-        (first, second) => Result((first, second)),
-        (first, second) => Result<(int, double), String>.error(
-          first.someOr(() => '') + second.someOr(() => ''),
-        ),
+        (first, second) => (first, second),
       );
-
       expect(joined.isError, isTrue);
       expect(
-        joined.errorOrNull,
-        equals(
-          'Error2',
-        ),
-      ); // Since the second is left, it returns the second error message
+        joined.match(onSuccess: (value) => null, onError: (error) => error),
+        equals('Error2'),
+      );
     });
   });
 
@@ -336,7 +313,7 @@ void main() {
 
     test('Both Eithers are left with int and double types', () {
       const either1 = Error<int, String>('Error1');
-      final either2 = Result<double, String>.error('Error2');
+      const either2 = Error<double, String>('Error2');
 
       final result1 = either1 | 0; // Should return 0 as either1 is left
       final result2 = either2 | 0.0; // Should return 0.0 as either2 is left
@@ -363,7 +340,7 @@ void main() {
       const result = Success<int, String>(5);
       final transformed = result >> (value) => Success<int, String>(value * 2);
 
-      const option = Option(transformed.resultOrNull);
+      final option = Some(transformed.resultOrNull);
       expect(option.isSome, isTrue);
       expect(option.someOr(() => 0), equals(10));
     });
@@ -386,14 +363,14 @@ void main() {
     });
 
     test('Option | operator with None', () {
-      const option = Option<int>.none();
-      const result = option | 10;
+      const option = None<int>();
+      final result = option | 10;
       expect(result, equals(10));
     });
 
     test('Option | operator with Some', () {
-      const option = Option<int>(5);
-      const result = option | 10;
+      const option = Some<int>(5);
+      final result = option | 10;
       expect(result, equals(5));
     });
   });
@@ -410,52 +387,45 @@ void main() {
     test('ResultOrError & operator with both errors', () {
       const result1 = Error<int, String>('Error1');
       const result2 = Error<int, String>('Error2');
-
-      const merged = result1 &
-          (
-            result2,
-            (first, second) => Success((first, second)),
-            (first, second) => Error(first | (second | 'Unknown Error'))
-          );
-
+      final merged = result1.merge(
+        result2,
+        (first, second) => (first, second),
+      );
       expect(merged.isError, isTrue);
-      expect(merged.errorOrNull, equals('Error1'));
+      expect(
+        merged.match(onSuccess: (value) => null, onError: (error) => error),
+        equals('Error1'),
+      );
     });
   });
 
   group('HttpListResultOrStatusCode Special Cases', () {
     test('HttpListResultOrStatusCode >> operator with error state', () async {
-      const initial = HttpListResultOrStatusCode<int>.error(404);
-
-      const transformed = initial >>
-          ((list) => HttpListResultOrStatusCode(
-                list.map((number) => number * 2).toList(),
-              ));
-
+      const initial = Error<List<int>, int>(404);
+      final transformed = initial.bind(
+        (list) => Success<List<int>, int>(
+          list.map((number) => number * 2).toList(),
+        ),
+      );
       expect(transformed.isError, isTrue);
-      expect(transformed.errorOrNull, equals(404));
+      expect(
+        transformed.match(
+          onSuccess: (value) => null,
+          onError: (error) => error,
+        ),
+        equals(404),
+      );
     });
   });
 
   group('Complex Nested Monads', () {
     test('Nested ResultOrError inside Option', () {
       const innerResult = Success<int, String>(5);
-      const option = Option(innerResult);
+      const Option<Result<int, String>> option = Some(innerResult);
 
       expect(option.isSome, isTrue);
       expect(
-        option.someOr(() => Result.error('Error')).isSuccess,
-        isTrue,
-      );
-    });
-
-    test('Nested HttpListResultOrStatusCode inside ResultOrError', () {
-      const innerHttp = Success([1, 2, 3]);
-      const result = Success(innerHttp);
-
-      expect(result.isSuccess, isTrue);
-      expect(
-        result.resultOr(() => const Error(404)).isSuccess,
+        option.someOr(() => const Error('Error')).isSuccess,
         isTrue,
       );
     });
@@ -463,7 +433,7 @@ void main() {
 
   group('ConcreteEither', () {
     test('should contain the left value when created with left', () {
-      const either = Error<int,String>('Error');
+      const either = Error<int, String>('Error');
       expect(either.isError, isTrue);
       expect(either.errorOrNull, 'Error');
       expect(either.isSuccess, isFalse);
