@@ -5,6 +5,8 @@ Carefully crafted monads, such as `Result` and `Option` for exhaustive pattern m
 ## Introduction
 This library has a modern collection of monads and operators for Dart. It is inspired by the elegance of languages like F# and Haskell. The library is simple, expressive, and easy to use. It leverages the recent addition of the [`sealed` class modifier](https://dart.dev/language/class-modifiers#sealed) in Dart to provide exhaustive [pattern matching](https://dart.dev/language/patterns). This makes traversing results far easier and less error prone, particularly with [Dart's Switch Expression](https://www.christianfindlay.com/blog/dart-switch-expressions).
 
+The types here are algebraic data types for exhaustive pattern matching.
+
 Example: 
 ```dart
 void main() {
