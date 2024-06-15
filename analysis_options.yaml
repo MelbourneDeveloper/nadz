@@ -6,3 +6,4 @@ analyzer:
     public_member_api_docs: warning
     matching_super_parameters: ignore
     avoid_equals_and_hash_code_on_mutable_classes: ignore
+    inference_failure_on_instance_creation: warning

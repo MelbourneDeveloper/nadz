@@ -4,19 +4,19 @@ import 'package:nadz/nadz.dart';
 
 void main() {
   // Creating an Option instance with some value
-  final someOption = Option<int>(5);
+  final someOption = Some<int>(5);
   print(someOption); // Should print something like Option (5)
 
   // Creating an Option instance with no value
-  final noneOption = Option<int>.none();
+  final noneOption = None<int>();
   print(noneOption); // Should print something like Option (None)
 
   // Creating a ResultOrError instance with a result
-  final successResult = Result<String, String>('Success');
+  final successResult = Success<String, String>('Success');
   print(successResult); // Should print something like ResultOrError (Success)
 
   // Creating a ResultOrError instance with an error
-  final errorResult = Result<String, String>.error('Error');
+  final errorResult = Error<String, String>('Error');
   print(errorResult);
 
   // Should print something like ResultOrError (Error)
@@ -31,16 +31,15 @@ void main() {
   // Should print "Got result: Success"
 
   // Using the map method to transform the result
-  final mappedResult = successResult.map<String, Result<String, String>>(
+  final mappedResult = successResult.map(
     (result) => result.toUpperCase(),
-    onRight: Result.new,
   );
   print(mappedResult);
 
   // Should print something like ResultOrError (SUCCESS)
 
   // Creating a HttpListResultOrStatusCode instance with a result
-  final httpListResult = HttpListResultOrStatusCode<int>([1, 2, 3]);
+  final httpListResult = Success([1, 2, 3]);
   print(
     httpListResult,
   );
@@ -48,7 +47,7 @@ void main() {
   // Should print something like HttpListResultOrStatusCode ([1, 2, 3])
 
   // Using the transformList method to transform the list
-  final transformedHttpListResult = httpListResult.transformList<String>(
+  final transformedHttpListResult = httpListResult.map(
     (list) => list.map((item) => 'Item: $item').toList(),
   );
 
