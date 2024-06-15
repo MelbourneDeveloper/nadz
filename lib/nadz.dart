@@ -98,7 +98,6 @@ class ObservableState<S> {
 
 /// Extension methods for [Result]
 extension ResultExtensions<T, E> on Result<T, E> {
-
   /// Returns the result a the specified value
   T resultOr(T or) => switch (this) {
         Success(value: final v) => v,
@@ -106,7 +105,7 @@ extension ResultExtensions<T, E> on Result<T, E> {
       };
 
   /// Achieves the same thing as a switch expression with pattern
-  /// matching. You should consider using a switch expression, but 
+  /// matching. You should consider using a switch expression, but
   /// sometimes the match function is simpler
   U match<U>({
     required U Function(T) onSuccess,
