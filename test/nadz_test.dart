@@ -82,12 +82,12 @@ void main() {
 
     test('Option with value should return Right', () {
       const option = Some(5);
-      expect(option.toString(), equals('Option<int> (5)'));
+      expect(option.toString(), equals('Some (5)'));
     });
 
     test('Option with None should return Left(None)', () {
       const option = None();
-      expect(option.toString(), equals('Option<int> (None)'));
+      expect(option.toString(), equals('None'));
     });
   });
 
@@ -168,7 +168,7 @@ void main() {
         );
 
         expect(mapped.isError, isTrue);
-        expect(mapped.errorOrNull(), equals(404));
+        expect(mapped.errorOrNull, equals(404));
       });
     });
   });

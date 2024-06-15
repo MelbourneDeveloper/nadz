@@ -11,7 +11,7 @@ extension ResultExtensions<T, E> on Result<T, E> {
         _ => null,
       };
 
-  E? errorOrNull() => switch (this) {
+  E? get errorOrNull => switch (this) {
         Error(error: final v) => v,
         _ => null,
       };

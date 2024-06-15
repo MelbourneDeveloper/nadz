@@ -58,10 +58,10 @@ void main() {
 
     test('leftOrNull should return left value or null', () {
       const either = Error<int, String>('Error');
-      expect(either.errorOrNull(), equals('Error'));
+      expect(either.errorOrNull, equals('Error'));
 
       const result = Success<int, String>(5);
-      expect(result.errorOrNull(), isNull);
+      expect(result.errorOrNull, isNull);
     });
 
     test('mapRightOrNull should transform right value or return null', () {

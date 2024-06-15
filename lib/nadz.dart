@@ -11,6 +11,9 @@ class Success<T, E> extends Result<T, E> {
 
   /// The successful value
   final T value;
+
+  @override
+  String toString() => 'Success ($value)';
 }
 
 /// Error result (left)
@@ -20,6 +23,9 @@ class Error<T, E> extends Result<T, E> {
 
   /// The error
   final E error;
+
+  @override
+  String toString() => 'Error ($error)';
 }
 
 /// Encapsulates either a result (value of generic type T) or an error
@@ -52,7 +58,7 @@ class Some<T> extends Option<T> {
   final T value;
 
   @override
-  String toString() => 'None';
+  String toString() => 'Some ($value)';
 }
 
 /// Option type is used to represent optional values that could either be

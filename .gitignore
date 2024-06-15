@@ -1,5 +1,7 @@
 .dart_tool/
 
 example/.dart_tool/
+coverage/
+build/
 
 .DS_Store
