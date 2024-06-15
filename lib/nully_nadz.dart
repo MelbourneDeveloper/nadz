@@ -1,5 +1,26 @@
 import 'package:nadz/nadz.dart';
 
+extension ResultExtensions<T, E> on Result<T, E> {
+  T? get resultOrNull => switch (this) {
+        Success(value: final v) => v,
+        _ => null,
+      };
+
+  U? mapOrNull<U>(U Function(T) transform) => switch (this) {
+        Success(value: final v) => transform(v),
+        _ => null,
+      };
+
+  U match<U>({
+    required U Function(T) onSuccess,
+    required U Function(E) onError,
+  }) =>
+      switch (this) {
+        Success(value: final v) => onSuccess(v),
+        Error(error: final e) => onError(e),
+      };
+}
+
 ///Extensions for [ListResult]
 extension ListResultExtensions<T, E> on ListResult<T, E> {
   ///Returns the list if it is success null otherwise
@@ -19,7 +40,6 @@ extension ListResultExtensions<T, E> on ListResult<T, E> {
     return null;
   }
 
-  
   int? get lengthOrNull =>
       match(onError: (l) => null, onSuccess: (r) => r.length);
 
