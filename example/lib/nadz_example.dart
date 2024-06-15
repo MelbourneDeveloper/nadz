@@ -1,82 +1,61 @@
-// ignore_for_file: avoid_print
-
 import 'dart:convert';
-
 import 'package:http/http.dart';
 import 'package:nadz/nadz.dart';
 
-extension ClientExtensions on Client {
-  Future<TResult> getResult<TResult extends Result>(
-    String url, {
-    required TResult Function(dynamic) onSuccess,
-    required TResult Function(int) onError,
-  }) async {
-    try {
-      final response = await this.get(Uri.parse(url));
-      if (response.statusCode == 200) {
-        //This could throw an exception. To complete this, we also
-        //need to wrap this in a try catch so we can return a
-        //useful error
-        return onSuccess(jsonDecode(response.body));
-      }
-      return onError(response.statusCode);
-    } catch (e) {
-      return onError(500);
-    }
-  }
-}
+typedef Post = ({
+  int userId,
+  int id,
+  String title,
+  String body,
+});
 
-class Post {
-  final int userId;
-  final int id;
-  final String title;
-  final String body;
-
-  Post({
-    required this.userId,
-    required this.id,
-    required this.title,
-    required this.body,
-  });
-
-  factory Post.fromJson(Map<String, dynamic> json) {
-    return Post(
-      userId: json['userId'],
-      id: json['id'],
-      title: json['title'],
-      body: json['body'],
+extension PostExtensions on Map<String, dynamic> {
+  Post toPost() {
+    return (
+      userId: this['userId'],
+      id: this['id'],
+      title: this['title'],
+      body: this['body'],
     );
   }
 }
 
-void main() async {
-  final client = Client();
-
-  final result = await client.getResult<Result<List<Post>, int>>(
-    'https://jsonplaceholder.typicode.com/posts',
-    onSuccess: (dynamic json) {
-      try {
-        final List<dynamic> jsonList = json as List<dynamic>;
-        final posts =
-            jsonList.map((jsonPost) => Post.fromJson(jsonPost)).toList();
-        return Success(posts);
-      } catch (e) {
-        return Error(500);
+extension ClientExtensions on Client {
+  Future<Result<List<T>, int>> getResult<T>(
+    String url, {
+    required T Function(Map<String, dynamic>) onMap,
+    required Result<List<T>, int> Function(List<T>) onSuccess,
+  }) async {
+    try {
+      final response = await this.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final jsonList = jsonDecode(response.body) as List<dynamic>;
+        final resultList = jsonList
+            .cast<Map<String, dynamic>>()
+            .map((jsonMap) => onMap(jsonMap))
+            .toList();
+        return onSuccess(resultList);
       }
-    },
-    onError: (statusCode) => Error(statusCode),
+      return Error(response.statusCode);
+    } catch (e) {
+      return Error(500);
+    }
+  }
+}
+
+void main() async {
+  final result = await Client().getResult(
+    'https://jsonplaceholder.typicode.com/posts',
+    onMap: (jsonPost) => jsonPost.toPost(),
+    onSuccess: (posts) => Success(posts),
   );
 
   final display = switch (result) {
-    Success(value: final posts) =>
-      '''Fetched ${posts.length} posts successfully!
-      ${posts.map((p) => 'Title: ${p.title}\nBody: ${p.body}\n---').join('\n')}
-      ''',
+    Success(value: final posts) => 'Fetched ${posts.length} posts successfully!'
+        '\n${posts.map((p) => 'Title: ${p.title}\nBody: ${p.body}\n---').join('\n')}',
     Error(error: final statusCode) =>
       'Failed to fetch posts. Status code: $statusCode',
   };
 
   print(display);
-
-  client.close();
 }
