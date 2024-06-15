@@ -1,60 +1,60 @@
-// ignore_for_file: avoid_print
-
+import 'dart:convert';
+import 'package:http/http.dart';
 import 'package:nadz/nadz.dart';
 
-void main() {
-  // Creating an Option instance with some value
-  final someOption = Option<int>(5);
-  print(someOption); // Should print something like Option (5)
+typedef Post = ({
+  int userId,
+  int id,
+  String title,
+  String body,
+});
 
-  // Creating an Option instance with no value
-  final noneOption = Option<int>.none();
-  print(noneOption); // Should print something like Option (None)
+extension PostExtensions on Map<String, dynamic> {
+  Post toPost() {
+    return (
+      userId: this['userId'],
+      id: this['id'],
+      title: this['title'],
+      body: this['body'],
+    );
+  }
+}
 
-  // Creating a ResultOrError instance with a result
-  final successResult = Result<String, String>('Success');
-  print(successResult); // Should print something like ResultOrError (Success)
+extension ClientExtensions on Client {
+  Future<Result<List<T>, int>> getResult<T>(
+    String url, {
+    required List<T> Function(Iterable<Map<String, dynamic>>) onSuccess,
+  }) async {
+    try {
+      final response = await this.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final jsonList = jsonDecode(response.body) as List<dynamic>;
 
-  // Creating a ResultOrError instance with an error
-  final errorResult = Result<String, String>.error('Error');
-  print(errorResult);
+        return Success(onSuccess(jsonList.cast<Map<String, dynamic>>()));
+      }
+      return Error(response.statusCode);
+    } catch (e) {
+      return Error(500);
+    }
+  }
+}
 
-  // Should print something like ResultOrError (Error)
-
-  // Using the match method to handle both success and error cases
-  final matchedResult = successResult.match(
-    onRight: (result) => 'Got result: $result',
-    onLeft: (error) => 'Got error: $error',
-  );
-  print(matchedResult);
-
-  // Should print "Got result: Success"
-
-  // Using the map method to transform the result
-  final mappedResult = successResult.map<String, Result<String, String>>(
-    (result) => result.toUpperCase(),
-    onRight: Result.new,
-  );
-  print(mappedResult);
-
-  // Should print something like ResultOrError (SUCCESS)
-
-  // Creating a HttpListResultOrStatusCode instance with a result
-  final httpListResult = HttpListResultOrStatusCode<int>([1, 2, 3]);
-  print(
-    httpListResult,
-  );
-
-  // Should print something like HttpListResultOrStatusCode ([1, 2, 3])
-
-  // Using the transformList method to transform the list
-  final transformedHttpListResult = httpListResult.transformList<String>(
-    (list) => list.map((item) => 'Item: $item').toList(),
+void main() async {
+  //Make the call
+  final result = await Client().getResult(
+    'https://jsonplaceholder.typicode.com/posts',
+    onSuccess: (jsonPosts) =>
+        //Map the JSON results to a list of Posts
+        jsonPosts.map((p) => p.toPost()).toList(),
   );
 
-  // Should print something like HttpListResultOrStatusCode
-  //(["Item: 1", "Item: 2", "Item: 3"])
-  print(
-    transformedHttpListResult,
-  );
+  final display = switch (result) {
+    //This is the exhaustive pattern matching. We can only get results of these
+    Success(value: final posts) => 'Fetched ${posts.length} posts successfully!'
+        '\n${posts.map((p) => 'Title: ${p.title}\nBody: ${p.body}\n---').join('\n')}',
+    Error(error: final statusCode) =>
+      'Failed to fetch posts. Status code: $statusCode',
+  };
+
+  print(display);
 }

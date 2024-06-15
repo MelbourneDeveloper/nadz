@@ -1,135 +1,90 @@
-//------------ Monadi ------------
+// Types
 
-/// The Either class represents a value of one of two possible types
-/// (a disjoint union). Instances of Either are either an instance of left or
-/// right. All other Monads in this library derive from this type.
-///
-/// Use [EitherBase] to derive new Monads from this
-abstract class Either<L, R> {
-  L? get _left;
-  R? get _right;
+/// The value is iterable
+typedef IterableResult<T, E> = Result<Iterable<T>, E>;
 
-  /// Returns true if this instance represents a left value.
-  bool get isLeft => _left != null;
+/// The value is a list
+typedef ListResult<T, E> = Result<List<T>, E>;
 
-  /// Returns true if this instance represents a right value.
-  bool get isRight => _right != null;
+/// A typical HTTP scenario for lists of values
+typedef HttpListResultOrStatusCode<T> = ListResult<T, int>;
 
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is Either<L, R> &&
-          ((isLeft && other.isLeft && _left == other._left) ||
-              (isRight && other.isRight && _right == other._right)));
+/// Success result (right)
+class Success<T, E> extends Result<T, E> {
+  /// Constructs a success result
+  const Success(this.value);
+
+  /// The successful value
+  final T value;
 
   @override
-  int get hashCode => isLeft ? _left.hashCode : _right.hashCode;
-
-  @override
-  String toString() => '$runtimeType ${isLeft ? '($_left)' : '($_right)'}';
+  String toString() => 'Success ($value)';
 }
 
-/// An abstract base class for Either that initializes left and right values.
-/// Use this base class to derive new Monads
-abstract class EitherBase<L, R> extends Either<L, R> {
-  /// Initializes the value of left
-  EitherBase.left(L left)
-      : _left = left,
-        _right = null;
+/// Error result (left)
+class Error<T, E> extends Result<T, E> {
+  /// Constructs an error result
+  const Error(this.error);
 
-  /// Initializes the value of right
-  EitherBase.right(R right)
-      : _left = null,
-        _right = right;
+  /// The error
+  final E error;
 
   @override
-  final L? _left;
+  String toString() => 'Error ($error)';
+}
 
-  @override
-  final R? _right;
+/// Encapsulates either a result (value of generic type T) or an error
+/// (value of generic type E).
+sealed class Result<T, E> {
+  const Result();
+
+  /// Whether or not that the result was a success
+  bool get isSuccess => this is Success<T, E>;
+
+  /// Whether or the not the result was an error
+  bool get isError => this is Error<T, E>;
 }
 
 /// None represents the absence of a value in [Option].
-class None {
-  /// Creates a new instance of None.
+class None<T> extends Option<T> {
+  /// Constructs nothing
   const None();
 
   @override
   String toString() => 'None';
 }
 
+/// Represents a value in [Option]
+class Some<T> extends Option<T> {
+  /// Constructs something
+  const Some(this.value) : super();
+
+  /// The value
+  final T value;
+
+  @override
+  String toString() => 'Some ($value)';
+}
+
 /// Option type is used to represent optional values that could either be
 /// 'Some' or 'None'.
-class Option<T> extends Either<None, T> {
-  /// Creates a new instance of Option with a value of type [T].
-  Option(this._value) : _none = null;
-
-  /// Creates a new instance of Option with a value of type [None].
-  Option.none()
-      : _value = null,
-        _none = const None();
-
-  final T? _value;
-  final None? _none;
-
-  @override
-  T? get _right => _value;
-
-  @override
-  None? get _left => _none;
+sealed class Option<T> {
+  const Option();
 
   /// Returns true if the option is Some, false otherwise.
-  bool get isSome => _value != null;
+  bool get isSome => this is Some;
 
   /// Returns true if the option is None, false otherwise.
   bool get isNone => !isSome;
 }
 
-/// Encapsulates either a result (value of generic type T) or an error
-/// (value of generic type E).
-class Result<T, E> extends Either<E, T> {
-  /// Creates a new instance of Result with a value of type [T].
-  Result(this._result) : _error = null;
-
-  /// Creates a new instance of Result with a, error value of type [E].
-  Result.error(this._error) : _result = null;
-
-  final T? _result;
-  final E? _error;
-
-  @override
-  T? get _right => _result;
-
-  @override
-  E? get _left => _error;
-}
-
-/// Specialized version of [Result] for list results.
-class ListResult<T, E> extends Result<List<T>, E> {
-  /// Creates a new instance of ListResult with a value of type List<[T]>.
-  ListResult(super._result);
-
-  /// Creates a new instance of ListResult with a, error value of type [E].
-  ListResult.error(E super.error) : super.error();
-}
-
-/// Specialized version of ListResultOrError to be used for HTTP responses,
-/// with int as the error type to represent the HTTP status code.
-class HttpListResultOrStatusCode<T> extends ListResult<T, int> {
-  /// Creates a new instance of HttpListResultOrStatusCode with a value of type
-  HttpListResultOrStatusCode(super.result);
-
-  /// Creates a new instance of HttpListResultOrStatusCode with a, error value
-  HttpListResultOrStatusCode.error(super.error) : super.error();
-}
-
 /// Encapsulates a state value that can be observed by external observers.
 class ObservableState<S> {
   /// Creates a new instance of ObservableState with an initial state.
-  ObservableState(S initialState) : _state = Option<S>(initialState);
+  ObservableState(S initialState) : _state = Some(initialState);
 
   /// Creates a new instance of ObservableState with no initial state.
-  ObservableState.none() : _state = Option<S>.none();
+  ObservableState.none() : _state = None<S>();
 
   /// The current state wrapped in an Option.
   Option<S> _state;
@@ -138,102 +93,66 @@ class ObservableState<S> {
   Option<S> get state => _state;
   final List<WeakReference<void Function(Option<S>)>> _observers = [];
 }
-//------------ Estensioni ------------
 
-/// Extends [Either] with additional functionality.
-extension EitherExtensions<L, R> on Either<L, R> {
-  /// Returns the result of [onLeft] or the result of [onRight]
-  U match<U>({
-    required U Function(L) onLeft,
-    required U Function(R) onRight,
-  }) =>
-      isLeft ? onLeft(_left as L) : onRight(_right as R);
+//------------ Extensions ------------
 
-  /// Returns the right value if it exists, otherwise returns the result of
-  /// [orElse]
-  R rightOr(R Function() orElse) => _right ?? orElse();
-
-  /// Returns the left value if it exists, otherwise returns the result of
-  /// [orElse]
-  L leftOr(L Function() orElse) => _left ?? orElse();
-
-  /// Returns the right value if it exists, otherwise returns [value]
-  R operator |(
-    R value,
-  ) =>
-      isRight ? _right as R : value;
-
-  /// Performs a [bind] operation and returns a new instance of [M].
-  M bind<M extends Either<L, R>>(M Function(R) transform) =>
-      isRight ? transform(_right as R) : this as M;
-
-  /// Performs a [map] operation and returns a new instance of [M].
-  M map<U, M extends Either<L, U>>(
-    U Function(R) transform, {
-    M Function(U)? onRight,
-  }) =>
-      isRight
-          ? onRight != null
-              ? onRight(transform(_right as R))
-              : Result<U, L>(transform(_right as R)) as M
-          : this as M;
-
-  /// Performs a [merge] operation and returns a new instance of [M].
-  M merge<J, M extends Either<L, (R, J)>>(
-    Either<L, J> other,
-    M Function(R first, J second) onJoin,
-    M Function(Option<L> first, Option<L> second) onLeft,
-  ) =>
-      (isRight && other.isRight)
-          ? onJoin(_right as R, other._right as J)
-          : onLeft(
-              Option<L>(isLeft ? _left as L : null),
-              Option<L>(other.isLeft ? other._left as L : null),
-            );
-}
-
-/// Extends [Option] with additional functionality.
-extension OptionExtensions<T> on Option<T> {
-  /// Returns the value if it is some, or the result of [orElse] if it is none.
-  T someOr(T Function() orElse) => _right ?? orElse();
-
-  /// Performs a [bind] operation
-  Option<T> operator >>(
-    Option<T> Function(T) transform,
-  ) =>
-      bind(transform);
-}
-
-/// Extends [Result] with additional functionality.
+/// Extension methods for [Result]
 extension ResultExtensions<T, E> on Result<T, E> {
-  /// Returns true if this instance represents a success result.
-  bool get isSuccess => _result != null;
 
-  /// Returns true if this instance represents an error.
-  bool get isError => !isSuccess;
+  /// Returns the result a the specified value
+  T resultOr(T or) => switch (this) {
+        Success(value: final v) => v,
+        _ => or,
+      };
 
-  /// Returns the result if it is a success, or the result of [orElse]
-  T resultOr(T Function() orElse) => _right ?? orElse();
+  /// Achieves the same thing as a switch expression with pattern
+  /// matching. You should consider using a switch expression, but 
+  /// sometimes the match function is simpler
+  U match<U>({
+    required U Function(T) onSuccess,
+    required U Function(E) onError,
+  }) =>
+      switch (this) {
+        Success(:final value) => onSuccess(value),
+        Error(error: final e) => onError(e),
+      };
 
-  /// Similar to [merge]. Doco missing
-  Result<(T, T), E> operator &(
-    (
-      Either<E, T> other,
-      Result<(T, T), E> Function(T first, T second) onJoin,
-      Result<(T, T), E> Function(
-        Option<E> first,
-        Option<E> second,
-      ) onLeft,
-    ) transformation,
+  /// Returns the success value if it exists, otherwise returns [or]
+  T operator |(
+    T or,
   ) =>
-      (isRight && transformation.$1.isRight)
-          ? transformation.$2(_right as T, transformation.$1._right as T)
-          : transformation.$3(
-              Option<E>(isLeft ? _left as E : null),
-              Option<E>(
-                transformation.$1.isLeft ? transformation.$1._left as E : null,
-              ),
-            );
+      switch (this) {
+        Success(:final value) => value,
+        Error() => or,
+      };
+
+  /// Performs a [bind] operation and returns a new instance with a new type.
+  /// The 'bind' method allows chaining operations that may fail.
+  Result<U, E> bind<U>(Result<U, E> Function(T) f) => match(
+        onSuccess: (value) => f(value),
+        onError: Error<U, E>.new,
+      );
+
+  /// The 'map' method transforms the successful value without changing
+  /// the error.
+  Result<U, E> map<U>(U Function(T) f) => match(
+        onSuccess: (value) => Success<U, E>(f(value)),
+        onError: Error<U, E>.new,
+      );
+
+  /// Performs a merge operation and returns a new instance of [M].
+  Result<M, E> merge<M, J>(Result<J, E> other, M Function(T, J) onJoin) =>
+      match(
+        onSuccess: (firstValue) => other.match(
+          onSuccess: (secondValue) =>
+              Success<M, E>(onJoin(firstValue, secondValue)),
+          onError: Error<M, E>.new,
+        ),
+        onError: (firstError) => other.match(
+          onSuccess: (_) => Error<M, E>(firstError),
+          onError: (_) => Error<M, E>(firstError),
+        ),
+      );
 
   /// Performs a [bind] operation and returns a new instance.
   Result<T, E> operator >>(
@@ -242,31 +161,67 @@ extension ResultExtensions<T, E> on Result<T, E> {
       bind(transform);
 }
 
+/// Extends [Option] with additional functionality.
+extension OptionExtensions<T> on Option<T> {
+  /// Returns the value if it is some, or the result of [orElse] if it is none.
+  T someOr(T Function() orElse) => switch (this) {
+        Some(:final value) => value,
+        _ => orElse(),
+      };
+
+  /// Returns a new [Option] from an existing [Option]
+  Option<U> bind<U>(Option<U> Function(T) f) => switch (this) {
+        Some(:final value) => f(value),
+        None() => const None(),
+      };
+
+  /// Performs a [bind] operation
+  Option<T> operator >>(
+    Option<T> Function(T) transform,
+  ) =>
+      bind(transform);
+
+  /// Returns the value if it exists, otherwise returns [or]
+  T operator |(
+    T or,
+  ) =>
+      switch (this) {
+        Some(:final value) => value,
+        None() => or,
+      };
+}
+
+Iterable<T> _sort<T>(Iterable<T> iterable, int Function(T, T) compare) =>
+    iterable.toList()..sort(compare);
+
 /// Extends [ListResult] with additional functionality.
-extension ListResultExtensions<T, E> on ListResult<T, E> {
+extension ListResultExtensions<T, E> on IterableResult<T, E> {
   /// Returns true if this instance represents a success result and there are
   /// itemse in the list.
-  bool get isNotEmpty => !isEmpty;
+  bool get isNotEmpty =>
+      switch (this) { Success(:final value) => value.isNotEmpty, _ => false };
 
   /// Returns true if the result is not successful or the list is empty.
-  bool get isEmpty => !isSuccess || _result!.isEmpty;
+  bool get isEmpty =>
+      switch (this) { Success(:final value) => value.isEmpty, _ => false };
 
   /// Returns the result if it is a success, or the result of [orElse]
-  Iterable<T> iterableOr(Iterable<T> Function() orElse) => _result ?? orElse();
+  Iterable<T> iterableOr(Iterable<T> orElse) =>
+      switch (this) { Success(:final value) => value, _ => orElse };
 
-  /// Returns the length of the list if it is a success, or the result of
-  /// [length]
-  int lengthOr(int Function() length) => isSuccess ? _result!.length : length();
+  /// Returns the length of the list if it is a success, or [length]
+  int lengthOr(int length) =>
+      switch (this) { Success(:final value) => value.length, _ => length };
 
   /// Performs a sort operation and returns a new instance of [M].
-  M sorted<M extends ListResult<T, E>>(
+  IterableResult<T, E> sorted<M extends IterableResult<T, E>>(
     int Function(T a, T b) compare, {
-    required M Function(List<T>) onSuccess,
-    required M Function(E) onError,
+    required Iterable<T> Function(Iterable<T>) onSuccess,
   }) =>
-      isSuccess
-          ? onSuccess(List<T>.from(_result!)..sort(compare))
-          : onError(_error as E);
+      switch (this) {
+        Success(:final value) => Success<Iterable<T>, E>(_sort(value, compare)),
+        final Error<Iterable<T>, E> e => e,
+      };
 
   /// Performs a filter operation and returns a new instance of [T].
   Iterable<T> where(
@@ -274,30 +229,9 @@ extension ListResultExtensions<T, E> on ListResult<T, E> {
     required Iterable<T> Function(E) onError,
   }) =>
       match(
-        onRight: (list) => list.where(predicate),
-        onLeft: onError,
+        onSuccess: (list) => list.where(predicate),
+        onError: onError,
       );
-}
-
-/// Extends [HttpListResultOrStatusCode] with additional functionality.
-extension HttpListResultOrStatusCodeExtensions<T>
-    on HttpListResultOrStatusCode<T> {
-  /// Performs a sort operation and returns a new instance.
-  HttpListResultOrStatusCode<T> sorted(int Function(T a, T b) compare) =>
-      // ignore: unnecessary_cast
-      (this as ListResult<T, int>).sorted(
-        compare,
-        onSuccess: HttpListResultOrStatusCode<T>.new,
-        onError: HttpListResultOrStatusCode<T>.error,
-      );
-
-  /// Performs a transform operation on the list
-  HttpListResultOrStatusCode<U> transformList<U>(
-    List<U> Function(List<T>) transform,
-  ) =>
-      isRight
-          ? HttpListResultOrStatusCode<U>(transform(_result!))
-          : HttpListResultOrStatusCode<U>.error(_error!);
 }
 
 /// Extends [ObservableState] with additional functionality.
@@ -315,7 +249,7 @@ extension ObservableStateObservers<S> on ObservableState<S> {
 
   /// Updates the state based on a given transform function.
   void updateState(S Function(Option<S>) transform) {
-    _state = Option(transform(_state));
+    _state = Some(transform(_state));
     _notifyObservers();
   }
 

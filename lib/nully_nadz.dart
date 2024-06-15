@@ -1,11 +1,35 @@
 import 'package:nadz/nadz.dart';
 
-extension ListResultOrErrorNullExtensions<T, E> on ListResult<T, E> {
+/// Extensions for [Result]
+extension NullResultExtensions<T, E> on Result<T, E> {
+  /// Returns the result a the specified value
+  T? get resultOrNull => switch (this) {
+        Success(value: final v) => v,
+        _ => null,
+      };
+
+  /// Returns a transformed value or null
+  U? mapOrNull<U>(U Function(T) transform) => switch (this) {
+        Success(value: final v) => transform(v),
+        _ => null,
+      };
+
+  /// Returns the error if it exists, otherwise null
+  E? get errorOrNull => switch (this) {
+        Error(error: final v) => v,
+        _ => null,
+      };
+}
+
+///Extensions for [ListResult]
+extension ListResultExtensions<T, E> on ListResult<T, E> {
+  ///Returns the list if it is success null otherwise
   T? get firstOrNull => match(
-        onRight: (list) => list.isNotEmpty ? list.first : null,
-        onLeft: (e) => null,
+        onSuccess: (list) => list.isNotEmpty ? list.first : null,
+        onError: (e) => null,
       );
 
+  ///Returns the first value in the list if it is success null otherwise
   T? firstWhereOrNull(bool Function(T) predicate) {
     final iterable = whereOrNull(predicate);
 
@@ -16,38 +40,38 @@ extension ListResultOrErrorNullExtensions<T, E> on ListResult<T, E> {
     return null;
   }
 
-  int? get lengthOrNull => match(onLeft: (l) => null, onRight: (r) => r.length);
+  /// Returns the length of the list if it is success null otherwise
+  int? get lengthOrNull =>
+      match(onError: (l) => null, onSuccess: (r) => r.length);
 
+  /// Returns the first n elements of the list if it is success or null
   Iterable<T>? takeOrNull(int i) =>
-      match(onLeft: (l) => null, onRight: (r) => r.take(i));
+      match(onError: (l) => null, onSuccess: (r) => r.take(i));
 
+  /// Returns the filtered elements of the list if it is success or null
   Iterable<T>? whereOrNull(bool Function(T) predicate) => match(
-        onRight: (list) => list.where(predicate),
-        onLeft: (e) => null,
+        onSuccess: (list) => list.where(predicate),
+        onError: (e) => null,
       );
 }
 
-extension EitherExtensions<L, R> on Either<L, R> {
-  R? get rightOrNull => match(onLeft: (l) => null, onRight: (r) => r);
-  L? get leftOrNull => match(onLeft: (l) => l, onRight: (r) => null);
-
-  U? mapRightOrNull<U>(U Function(R) transform) =>
-      match(onRight: transform, onLeft: (e) => null);
-}
-
-extension ResultOrErrorNullExtensions<T, E> on Result<T, E> {
-  T? get resultOrNull => rightOrNull;
-  E? get errorOrNull => leftOrNull;
-}
-
+/// Extensions for [Option]
 extension OptionToNullable<T> on Option<T> {
-  T? toNullable() => rightOrNull;
+  /// Returns the value if it exists, otherwise null
+  T? toNullable() => switch (this) {
+        Some(:final value) => value,
+        _ => null,
+      };
 }
 
+/// Create [Option] from nullable value
 extension NullableToOption<T> on T? {
-  Option<T> toOption() => this != null ? Option(this as T) : Option.none();
+  /// Returns [Some] if the value is not null, otherwise [None]
+  Option<T> toOption() => this != null ? Some<T>(this as T) : None<T>();
 }
 
+/// Extensions for [Iterable<Option<T>>]
 extension IterableOption<T> on Iterable<Option<T>> {
+  /// Returns a list of nullable values
   List<T?> toNullableList() => map((option) => option.toNullable()).toList();
 }

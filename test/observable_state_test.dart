@@ -57,48 +57,9 @@ void main() {
       expect(isNotified, isFalse);
     });
 
-    /*
-    test(
-        'weak referenced observers should be unregistered if garbage collected',
-        () async {
-      final observableState = ObservableState<int>(0);
-      var notifiedCount = 0;
-
-      var observerCalled = false;
-
-      // Define an observer with a finalizer that sets observerCalled to true
-      // when the observer is garbage collected.
-      final finalizer = Finalizer((_) {
-        observerCalled = true;
-      });
-
-      // Simulate a weak referenced observer by creating it inside a scope
-      // and not keeping a long-lived reference to it.
-      {
-        void observer(Option<int> state) => notifiedCount++;
-        finalizer.attach(observer, null, detach: () => observerCalled = true);
-        observableState.addObserver(observer);
-      }
-
-      // Trigger garbage collection indirectly by allocating memory
-      List.generate(1000000, (index) => 'data');
-
-      await Future<void>.delayed(const Duration(seconds: 1));
-
-      observableState
-        ..updateState((state) => 1)
-        ..updateState((state) => 2);
-
-      expect(observerCalled, true);
-
-      // Expect a low number of notifications due to garbage collection
-      expect(notifiedCount, anyOf(equals(0), equals(1)));
-    });
-    */
-
     test('state updates correctly when `updateState` is called', () {
       final observableState = ObservableState<int>(0);
-      var observedState = Option<int>.none();
+      Option<int> observedState = const None<int>();
 
       observableState
         ..addObserver((state) {
