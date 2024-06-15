@@ -1,7 +1,7 @@
 // Types
 
 typedef IterableResult<T, E> = Result<Iterable<T>, E>;
-typedef ListResult<T, E> = IterableResult<List<T>, E>;
+typedef ListResult<T, E> = Result<List<T>, E>;
 typedef HttpListResultOrStatusCode<T> = ListResult<T, int>;
 
 /// Success result (right)

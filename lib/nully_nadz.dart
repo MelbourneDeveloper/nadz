@@ -10,15 +10,6 @@ extension ResultExtensions<T, E> on Result<T, E> {
         Success(value: final v) => transform(v),
         _ => null,
       };
-
-  U match<U>({
-    required U Function(T) onSuccess,
-    required U Function(E) onError,
-  }) =>
-      switch (this) {
-        Success(value: final v) => onSuccess(v),
-        Error(error: final e) => onError(e),
-      };
 }
 
 ///Extensions for [ListResult]
@@ -52,25 +43,15 @@ extension ListResultExtensions<T, E> on ListResult<T, E> {
       );
 }
 
-extension EitherExtensions<L, R> on Either<L, R> {
-  R? get rightOrNull => match(onLeft: (l) => null, onRight: (r) => r);
-  L? get leftOrNull => match(onLeft: (l) => l, onRight: (r) => null);
-
-  U? mapRightOrNull<U>(U Function(R) transform) =>
-      match(onRight: transform, onLeft: (e) => null);
-}
-
-extension ResultOrErrorNullExtensions<T, E> on Result<T, E> {
-  T? get resultOrNull => rightOrNull;
-  E? get errorOrNull => leftOrNull;
-}
-
 extension OptionToNullable<T> on Option<T> {
-  T? toNullable() => rightOrNull;
+  T? toNullable() => switch (this) {
+        Some(:final value) => value,
+        _ => null,
+      };
 }
 
 extension NullableToOption<T> on T? {
-  Option<T> toOption() => this != null ? Option(this as T) : Option.none();
+  Option<T> toOption() => this != null ? Some<T>(this as T) : None<T>();
 }
 
 extension IterableOption<T> on Iterable<Option<T>> {
