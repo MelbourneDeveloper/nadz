@@ -80,12 +80,12 @@ void main() {
       expect(transformed.isNone, isTrue);
     });
 
-    test('Option with value should return Right', () {
+    test('Option with value should return Some (5)', () {
       const option = Some(5);
       expect(option.toString(), equals('Some (5)'));
     });
 
-    test('Option with None should return Left(None)', () {
+    test('Option with None should return None', () {
       const option = None();
       expect(option.toString(), equals('None'));
     });
@@ -161,7 +161,7 @@ void main() {
         expect(mapped.resultOrNull, equals(10));
       });
 
-      test('HttpListResultOrStatusCode map without onRight with error', () {
+      test('List with error isError and errorOrNull', () {
         const httpList = Error<List<int>, int>(404);
         final mapped = httpList.map(
           (list) => list.map((e) => e).toList(),
@@ -180,7 +180,7 @@ void main() {
       expect(nullable, 5);
     });
 
-    test('Option to nullable with none value', () {
+    test('Option to nullable is null', () {
       const option = None<int>();
       final nullable = option.toNullable();
       expect(nullable, isNull);
@@ -194,7 +194,7 @@ void main() {
       expect(option.toNullable(), 5);
     });
 
-    test('Nullable to option with null value', () {
+    test('Nullable to option isNone', () {
       int? nullable;
       final option = nullable.toOption();
       expect(option.isNone, isTrue);
