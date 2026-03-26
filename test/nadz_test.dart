@@ -477,4 +477,29 @@ void main() {
       );
     });
   });
+
+  group('Basix', () {
+    test('match onSuccess', () {
+      const result = Success<int, String>(1);
+      expect(
+        result.match(
+          onSuccess: (n) => n.toString(),
+          onError: (e) => '-1',
+        ),
+        '1',
+      );
+    });
+
+    test('match onError', () {
+      const result = Error<int, String>('ouch');
+      expect(
+        result.match(
+          onSuccess: (n) => n.toString(),
+          onError: (e) => '-1',
+        ),
+        '-1',
+      );
+    });
+
+  });
 }
